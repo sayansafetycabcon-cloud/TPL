@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TARSONS PRODUCTS — HSE Portal (Synced)</title>
+
+  <!-- Chart.js for charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --bg-dark:#041224; --panel:#eaf6f4; --muted:#6b8a8a; --accent:#0f9b63; --accent-2:#0fb8a4; --accent-3:#0b6b9f; --text-dark:#042526; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{ margin:0;font-family:Inter,sans-serif;color:var(--text-dark); background:linear-gradient(180deg,var(--bg-dark) 0%, #02233a 100%); -webkit-font-smoothing:antialiased; min-height:100vh;display:flex;flex-direction:column; }
+    .container{max-width:1150px;margin:0 auto;padding:16px;width:100%}
+    header{position:sticky;top:0;z-index:60;background:linear-gradient(90deg,var(--accent-3),var(--accent-2));color:white;padding:10px 0;box-shadow:0 6px 20px rgba(2,12,20,0.6)}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 8px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#003;font-weight:900}
+    nav ul{display:flex;gap:10px;list-style:none;padding:0;margin:0}
+    nav a{color:rgba(255,255,255,0.92);text-decoration:none;padding:8px 12px;border-radius:8px;font-weight:600;font-size:14px}
+    nav a:hover{background:rgba(255,255,255,0.06);transform:translateY(-2px)}
+    .card{background:linear-gradient(180deg,var(--panel),#ffffff);padding:18px;border-radius:14px;box-shadow:0 10px 30px rgba(2,8,20,0.4); margin-bottom: 15px;}
+    .hero{max-width:1150px;margin:18px auto;display:grid;grid-template-columns:1fr 340px;gap:18px;padding:12px}
+    .tiles{display:flex;gap:12px;flex-wrap:wrap}
+    .tile{flex:1 1 120px;padding:12px;border-radius:12px;background:linear-gradient(135deg,rgba(15,155,99,0.08), rgba(11,107,159,0.06))}
+    .big{font-size:22px;font-weight:800} .small{color:var(--muted);font-size:13px}
+    .factory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+    .factory-card { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 15px; }
+    .factory-title { font-weight: 800; color: var(--accent-3); margin-bottom: 10px; border-bottom: 2px solid var(--accent-2); padding-bottom: 5px; font-size: 16px; }
+    .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: var(--text-dark); }
+    .stat-row strong { color: var(--accent); }
+    form .two-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;background:white;font-size:14px}
+    button{cursor:pointer;padding:10px;border-radius:10px;border:none;font-weight:600}
+    .primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;box-shadow:0 8px 20px rgba(11,107,159,0.12)}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.4);color:white;height:40px;padding:0 15px;}
+    .ghost-dark{background:transparent;border:1px solid #ccc;color:var(--text-dark);}
+    .btn-sm{padding:4px 8px;font-size:12px;border-radius:4px;margin-left:4px;}
+    .btn-danger{background:#e74c3c;color:white;}
+    .btn-action{background:#3498db;color:white;}
+    .admin-only{display:none}
+    .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .gallery img{width:100%;height:120px;object-fit:cover;border-radius:10px;cursor:pointer}
+    .gal-del{position:absolute;top:5px;right:5px;background:red;color:white;border-radius:50%;width:24px;height:24px;text-align:center;line-height:24px;cursor:pointer;font-weight:bold;font-size:12px; border:2px solid white;}
+    .pdf-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px; margin-top:15px;}
+    table{width:100%;border-collapse:collapse;color:var(--text-dark);margin-top:10px;}
+    th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left;font-size:14px}
+    th{background:rgba(0,0,0,0.03);font-weight:700}
+    #loginOverlay, #manageUsersModal, #fullscreenModal, #siteStatsModal, #noticeBoardModal, #ptwModal {position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:9999}
+    #loginBox, #manageBox, #siteStatsBox, #noticeBox, #ptwBox {width:650px;background:white;padding:20px;border-radius:12px;}
+    .notice-board-banner { background: linear-gradient(90deg, #f39c12, #e67e22); color: white; padding: 10px 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .chat-header{padding:10px;background:var(--accent-3);color:white;display:flex;justify-content:space-between}
+    #hseChatBtn{position:fixed;right:20px;bottom:20px;z-index:1700;background:linear-gradient(90deg,#0f9b63,#0fb8a4);color:white;border:none;width:60px;height:60px;border-radius:50%;box-shadow:0 10px 30px rgba(2,20,30,0.3);font-size:24px;display:flex;align-items:center;justify-content:center;}
+    #hseChatBox{position:fixed;right:20px;bottom:90px;width:320px;height:400px;background:white;border-radius:10px;box-shadow:0 14px 40px rgba(2,20,30,0.35);z-index:1700;display:none;overflow:hidden;flex-direction:column;}
+    .chat-body{padding:10px;flex:1;overflow:auto;background:#fbfdfd}
+    .chat-input{padding:10px;border-top:1px solid #eee;display:flex;gap:5px}
+    .chat-msg{margin-bottom:8px;padding:8px;border-radius:8px;max-width:85%;font-size:13px;}
+    .chat-msg.me{background:#eaf6f4;margin-left:auto}
+    .chat-msg.other{background:#f0f2f4}
+    @media (max-width:980px){ .hero{grid-template-columns:1fr} #desktopNav{display:none} #mobileMenuBtn{display:block !important} .gallery{grid-template-columns:repeat(2,1fr)} }
+    #mobileMenu{display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:var(--bg-dark);z-index:998;padding-top:70px;}
+    #mobileNavList a{display:block;color:white;padding:15px;border-bottom:1px solid rgba(255,255,255,0.1);}
+
+  </style>
+</head>
+<body>
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div id="loginBox">
+      <h3>Sign in</h3>
+      <p class="small">Admin: <b>admin</b> / <b>admin123</b></p>
+      <input id="loginUser" placeholder="Username" style="margin-bottom:10px">
+      <input id="loginPass" type="password" placeholder="Password" style="margin-bottom:10px">
+      <div style="text-align:right">
+        <button class="ghost-dark" onclick="document.getElementById('loginOverlay').style.display='none'">Cancel</button>
+        <button class="primary" onclick="doLogin()">Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mobileMenu"><ul id="mobileNavList"></ul></div>
+
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo">TP</div>
+        <div class="site-title"><div class="name">TARSONS PRODUCTS</div><div class="sub">HSE Portal</div></div>
+      </div>
+      <nav id="desktopNav">
+        <ul>
+          <li><a href="#" onclick="navTo('home')">Home</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('dashboard')">Dashboard</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('report')">Report</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('ppe')">PPE</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('training')">Training</a></li>
+          <li><a href="#" onclick="requireAuthAndGo('ptw')">PTW</a></li>
+          <li><a href="#" onclick="navTo('gallery')">Gallery</a></li>
+          <li><a href="#" onclick="navTo('policies')">Policies</a></li>
+        </ul>
+      </nav>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div id="userBadge" style="font-size:13px;font-weight:600;"></div>
+        <button class="ghost" id="loginBtn" onclick="showLogin()">Login</button>
+        <button class="ghost" id="logoutBtn" onclick="doLogout()" style="display:none">Logout</button>
+        <button class="ghost" id="mobileMenuBtn" onclick="toggleMobileMenu()" style="display:none">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div>
+        <div class="card">
+            <div id="noticeBoardDisplay" class="notice-board-banner">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <h3 style="margin:0; color:white;">🚨 Global Notice Board</h3>
+                    <div class="admin-only">
+                        <button class="primary btn-sm" onclick="openNoticeBoardAdmin()" style="background:white; color:var(--text-dark);">Manage</button>
+                    </div>
+                </div>
+                <div id="activeNoticesList">
+                    <div class="notice-item"><div class="notice-title">Welcome!</div><div class="notice-content">Use the menu above to navigate the HSE Portal.</div></div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>HSE Overview</h2>
+            <div class="admin-only"><button class="btn-action btn-sm" onclick="openSiteStats()">Update Factory Stats</button></div>
+          </div>
+
+          <div class="tiles" style="margin-top:15px">
+            <div class="tile"><div class="small">Safe Days</div><div class="big" id="safeDays">0</div></div>
+            <div class="tile"><div class="small">Total Reports</div><div class="big" id="totalReports">0</div></div>
+            <div class="tile"><div class="small">Accident Ratio</div><div class="big" id="accRatio">0%</div></div>
+            <div class="tile"><div class="small">Open PTWs</div><div class="big" id="openPTWs">0</div></div>
+          </div>
+
+          <div id="factoriesContainer" class="factory-grid"></div>
+
+          <div style="margin-top:20px;">
+            <h3>Incident Trend</h3>
+            <canvas id="incidentChart" style="max-height:250px; width:100%;"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard" style="display:none" class="container">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between">
+            <h2>Dashboard</h2>
+            <button class="primary admin-only" onclick="openManageUsers()">Manage Users</button>
+        </div>
+        <div style="overflow-x:auto; margin-top:10px">
+          <table id="dashTable"><thead><tr><th>Date</th><th>Reporter</th><th>Severity</th><th>Description</th></tr></thead><tbody></tbody></table>
+        </div>
+        <button class="primary" onclick="exportJSON()" style="margin-top:15px">Export Data</button>
+      </div>
+    </section>
+
+    <!-- Report -->
+    <section id="report" style="display:none" class="container">
+      <div class="card">
+        <h2>Report Incident</h2>
+        <form id="incForm">
+          <div class="two-cols"><input id="rName" placeholder="Reporter Name" required><input id="rLoc" placeholder="Location" required></div>
+          <div class="two-cols" style="margin-top:10px"><input id="rDate" type="datetime-local" required><select id="rSev"><option>Low</option><option>Medium</option><option>High</option><option>Fatal</option></select></div>
+          <textarea id="rDesc" placeholder="Description..." style="margin-top:10px" required></textarea>
+          <input type="file" id="rPhoto" accept="image/*" style="margin-top:10px">
+          <button type="submit" class="primary" style="margin-top:10px">Submit Report</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PPE -->
+    <section id="ppe" style="display:none" class="container">
+      <div class="card">
+        <h2>PPE Inventory</h2>
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent);">
+            <h4>1. Define New Item</h4>
+            <form onsubmit="addPPEItem(event)">
+                <div class="two-cols">
+                    <input id="ppeName" placeholder="New Item Name" required>
+                    <input id="ppeUnit" placeholder="Unit (e.g. Pairs)" required>
+                </div>
+                <div class="two-cols" style="margin-top:5px">
+                    <input id="ppeInitialQty" type="number" placeholder="Initial Quantity" required>
+                    <input id="ppeReorder" type="number" placeholder="Reorder Alert Level" required>
+                </div>
+                <button type="submit" class="primary" style="margin-top:5px">Create Item</button>
+            </form>
+        </div>
+
+        <div class="admin-only" style="background:#f0f8ff;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--accent-3);">
+            <h4>2. Restock Item</h4>
+            <form onsubmit="restockPPE(event)">
+                <div class="two-cols">
+                    <select id="ppeRestockSelect" required><option value="">Select Item</option></select>
+                    <input id="ppeRestockQty" type="number" placeholder="Quantity Received" required>
+                </div>
+                <button type="submit" class="primary" style="margin-top:5px">Update Stock</button>
+            </form>
+        </div>
+
+        <h3>Current Stock</h3>
+        <div style="overflow-x:auto"><table id="ppeTable"><thead><tr><th>Item</th><th>Present Stock</th><th>Unit</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        <h3>Issue Log</h3>
+        <div style="overflow-x:auto; max-height:300px;"><table id="ppeLogTable"><thead><tr><th>Date</th><th>Item</th><th>Qty Issued</th><th>Issued To</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+    <!-- Training + Visitor induction -->
+    <section id="training" style="display:none" class="container">
+      <div class="card">
+        <h2>Safety Training</h2>
+        <div class="admin-only" style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
+            <h4>Define Module</h4>
+            <form onsubmit="addModule(event)">
+                <div class="two-cols"><input id="modName" placeholder="Module Name" required><input id="modFreq" type="number" placeholder="Frequency (Months)" required></div>
+                <button type="submit" class="primary" style="margin-top:5px">Save Module</button>
+            </form>
+        </div>
+        <h3>Modules</h3>
+        <table id="modTable" style="margin-bottom:20px"><thead><tr><th>Module</th><th>Frequency</th><th>Actions</th></tr></thead><tbody></tbody></table>
+        <div style="background:#f9f9f9;padding:15px;border-radius:8px;margin-bottom:15px">
+            <h4>Record Completion</h4>
+            <form onsubmit="addRecord(event)">
+                <div class="two-cols"><input id="recName" placeholder="Employee Name" required><select id="recMod" required><option value="">Select Module</option></select></div>
+                <div class="two-cols" style="margin-top:5px"><input id="recDate" type="date" required><button type="submit" class="primary">Record</button></div>
+            </form>
+        </div>
+        <h3>Records</h3>
+        <table id="recTable"><thead><tr><th>Employee</th><th>Module</th><th>Date</th><th>Next Due</th><th>Actions</th></tr></thead><tbody></tbody></table>
+
+        <div class="visitor-card">
+          <h3>Visitor Safety Induction</h3>
+          <p style="margin:6px 0 12px;color:var(--muted)">Record visitor induction, issue PPE and generate visitor induction certificate.</p>
+
+          <div style="display:grid; gap:8px; margin-bottom:12px;">
+            <form id="visitorForm" onsubmit="addVisitor(event)">
+              <div class="two-cols">
+                <input id="visName" placeholder="Visitor Name" required>
+                <input id="visCompany" placeholder="Company Name" required>
+              </div>
+              <div class="two-cols" style="margin-top:6px">
+                <input id="visPersonMeet" placeholder="Person to Meet" required>
+                <input id="visMobile" placeholder="Visitor Mobile Number" required>
+              </div>
+              <div class="two-cols" style="margin-top:6px">
+                <select id="visFactory" required>
+                  <option value="">Select Factory</option>
+                  <option>Jangalpur</option>
+                  <option>Dhulagarh</option>
+                  <option>Amta</option>
+                  <option>Panchla</option>
+                </select>
+                <input id="visPurpose" placeholder="Purpose of Visit" required>
+              </div>
+
+              <div style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <label><input type="checkbox" id="visBrief" /> Safety Briefing Given</label>
+                </div>
+
+              <div style="margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <label style="font-weight:700; margin-right:8px">PPE Issued:</label>
+                <label><input type="checkbox" name="ppe" value="Helmet"> Helmet</label>
+                <label><input type="checkbox" name="ppe" value="Safety Shoe"> Safety Shoe</label>
+                <label><input type="checkbox" name="ppe" value="Vest"> Vest</label>
+                <label><input type="checkbox" name="ppe" value="Goggles"> Goggles</label>
+                <label><input type="checkbox" id="visPPEOtherChk" name="ppe" value="Other"> Other</label>
+                <input id="visPPEOtherText" placeholder="Other PPE (if any)" style="width:200px;">
+              </div>
+
+              <div style="margin-top:8px; display:flex; gap:10px; align-items:center;">
+                <label>Visitor Photo (optional)</label>
+                <input type="file" id="visPhoto" accept="image/*">
+              </div>
+
+              <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" class="ghost-dark" onclick="document.getElementById('visitorForm').reset()">Reset</button>
+                <button type="submit" class="primary">Save & Generate Certificate</button>
+              </div>
+            </form>
+          </div>
+
+          <h4 style="margin-top:6px">Visitor Log</h4>
+          <div style="overflow-x:auto; max-height:240px;">
+            <table id="visitorTable">
+              <thead><tr><th>Name</th><th>Company</th><th>Mobile</th><th>Issued Time</th><th>Brief</th><th>PPE</th><th>Factory</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PTW -->
+    <section id="ptw" style="display:none" class="container">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2>Permit To Work (PTW)</h2>
+          <div>
+            <button class="primary" onclick="openPTWModal()">Create PTW</button>
+            <button class="ghost" onclick="renderPTWList()">Refresh</button>
+            <button class="ghost" onclick="renderPTWList('all')">All</button>
+            <button class="ghost" onclick="renderPTWList('pending')">Pending</button>
+            <button class="ghost" onclick="renderPTWList('approved')">Approved</button>
+            <button class="ghost" onclick="renderPTWList('rejected')">Rejected</button>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <div class="ptw-filter">
+            <label><strong>Filter by Factory:</strong></label>
+            <select id="ptwFactoryFilter" onchange="renderPTWList()">
+              <option value="">All</option>
+            </select>
+            <label><strong>Keyword:</strong></label>
+            <input id="ptwSearch" placeholder="Search by requester/location/desc" oninput="renderPTWList()" style="width:220px">
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table id="ptwTable">
+              <thead><tr><th>ID</th><th>Date</th><th>Type</th><th>Factory</th><th>Location</th><th>Requester</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Policies -->
+    <section id="policies" style="display:none" class="container">
+      <div class="card">
+        <h2>HSE Policies (PDF)</h2>
+        <div class="admin-only" style="margin-bottom:15px; background:#f9f9f9; padding:15px; border-radius:8px;">
+            <h4>Upload Policy</h4>
+            <form onsubmit="uploadPolicy(event)" style="display:grid; gap:10px;">
+                <input id="polTitle" placeholder="Policy Title" required>
+                <input type="file" id="polFile" accept="application/pdf" required>
+                <button type="submit" class="primary">Upload PDF</button>
+            </form>
+        </div>
+        <div id="policyGallery" class="pdf-grid"></div>
+      </div>
+    </section>
+
+    <!-- Gallery -->
+    <section id="gallery" style="display:none" class="container">
+      <div class="card">
+        <h2>Gallery</h2>
+        <div class="admin-only" style="margin-bottom:15px"><input type="file" id="galUpload" accept="image/*"><button class="primary" onclick="uploadPhoto()">Upload Photo</button></div>
+        <div id="galleryGrid" class="gallery"></div>
+      </div>
+    </section>
+
+    <section id="contact" style="display:none" class="container">
+      <div class="card"><h2>Contact</h2><p>HSE Officer: +91 98765 43210</p></div>
+    </section>
+
+  </main>
+
+  <!-- Modals and extras -->
+  <div id="manageUsersModal">
+    <div id="manageBox">
+        <div style="display:flex;justify-content:space-between"><h3>Manage Users</h3><button class="ghost-dark" onclick="document.getElementById('manageUsersModal').style.display='none'">X</button></div>
+        <div style="margin-bottom:15px;border-bottom:1px solid #eee;padding-bottom:10px;">
+            <h5>Add User</h5>
+            <div style="display:flex;gap:5px;"><input id="newU" placeholder="User"><input id="newP" placeholder="Pass"><select id="newR" style="width:80px"><option value="user">User</option><option value="admin">Admin</option></select></div>
+            <button class="primary" onclick="addNewUser()" style="width:100%;margin-top:5px;">Add</button>
+        </div>
+        <ul id="usersList" style="max-height:200px;overflow:auto;padding:0;list-style:none"></ul>
+    </div>
+  </div>
+
+  <div id="siteStatsModal">
+    <div id="siteStatsBox">
+        <h3>Update Factory Stats</h3>
+        <label>Select Factory</label>
+        <select id="factorySelect" style="width:100%; margin-bottom:10px;" onchange="loadFactoryData()"></select>
+        <div style="display:grid; gap:10px;">
+            <label>Fire Extinguishers Qty</label><input id="editFire" type="number">
+            <label>First Aid Box Qty</label><input id="editFirstAid" type="number">
+            <label>Total Manpower</label><input id="editManpower" type="number">
+        </div>
+        <div style="text-align:right; margin-top:15px;">
+            <button class="ghost-dark" onclick="document.getElementById('siteStatsModal').style.display='none'">Cancel</button>
+            <button class="primary" onclick="saveSiteStats()">Save</button>
+        </div>
+    </div>
+  </div>
+
+  <div id="noticeBoardModal">
+    <div id="noticeBox">
+        <div style="display:flex;justify-content:space-between"><h3>Manage Notices</h3><button class="ghost-dark" onclick="document.getElementById('noticeBoardModal').style.display='none'">X</button></div>
+
+        <div style="margin-bottom:15px;border-bottom:1px solid #eee;padding-bottom:10px;">
+            <h5>Create New Notice</h5>
+            <form onsubmit="addNotice(event)">
+                <input id="noticeTitle" placeholder="Title" required style="margin-bottom:5px;">
+                <textarea id="noticeContent" placeholder="Content" required style="margin-bottom:5px;"></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-size:14px;"><input type="checkbox" id="noticeActive" checked> Make Active Now</label>
+                    <button type="submit" class="primary btn-sm">Add Notice</button>
+                </div>
+            </form>
+        </div>
+
+        <h5>Current Notices</h5>
+        <div style="max-height:250px;overflow:auto;"><table id="adminNoticeTable" class="notice-board-admin"><thead><tr><th>Title</th><th>Active</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="ptwModal">
+    <div id="ptwBox">
+      <div style="display:flex;justify-content:space-between;align-items:center"><h3>Create PTW</h3><button class="ghost-dark" onclick="document.getElementById('ptwModal').style.display='none'">X</button></div>
+      <form id="ptwForm" onsubmit="createPTW(event)" style="display:grid; gap:8px; margin-top:10px;">
+        <div class="two-cols">
+          <input id="ptwRequester" placeholder="Requester Name" required>
+          <select id="ptwType" required>
+            <option value="">Select Permit Type</option>
+            <option>Hot Work</option>
+            <option>Confined Space</option>
+            <option>Electrical</option>
+            <option>Height Work</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="two-cols">
+          <select id="ptwFactory" required>
+            <option value="">Select Factory</option>
+            <option>Jangalpur</option>
+            <option>Dhulagarh</option>
+            <option>Amta</option>
+            <option>Panchla</option>
+          </select>
+          <input id="ptwLocation" placeholder="Exact Location / Area" required>
+        </div>
+        <textarea id="ptwDesc" placeholder="Work Description & Safety Controls" required style="min-height:80px"></textarea>
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+          <button type="button" class="ghost-dark" onclick="document.getElementById('ptwModal').style.display='none'">Cancel</button>
+          <button type="submit" class="primary">Submit PTW</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="fullscreenModal" onclick="this.style.display='none'"><img id="fsImg" style="max-width:90%;max-height:90%;border-radius:10px"></div>
+
+  <button id="hseChatBtn" onclick="toggleChat()">💬</button>
+  <div id="hseChatBox">
+    <div class="chat-header"><span>Team Chat</span><span style="cursor:pointer" onclick="toggleChat()">✕</span></div>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-input"><input id="chatInput" placeholder="Type..." onkeydown="if(event.key==='Enter') sendChat()"><button class="primary" onclick="sendChat()" style="padding:5px 10px">></button></div>
+  </div>
+
+  <!-- SCRIPT START: remote + local DB helpers -->
+  <script>
+  (function(){
+    const API_BASE = 'http://192.168.29.149:8000/api'; // confirmed address + Simple API style
+    // Remote helper (supports token if returned by auth)
+    const Remote = {
+      token: sessionStorage.getItem('hse_token') || null,
+      authHeaders(){ return this.token ? { 'Authorization': 'Bearer ' + this.token } : {}; },
+      async get(path){
+        try{
+          const r = await fetch(API_BASE + path, { headers: { 'Content-Type':'application/json', ...this.authHeaders() } });
+          if(!r.ok){ console.warn('GET', path, 'status', r.status); return null; }
+          return await r.json();
+        }catch(e){ console.warn('GET failed', path, e); return null; }
+      },
+      async post(path, body){
+        try{
+          const r = await fetch(API_BASE + path, { method:'POST', headers: { 'Content-Type':'application/json', ...this.authHeaders() }, body: JSON.stringify(body) });
+          if(!r.ok){ console.warn('POST', path, 'status', r.status); return null; }
+          return await r.json();
+        }catch(e){ console.warn('POST failed', path, e); return null; }
+      },
+      async put(path, body){
+        try{
+          const r = await fetch(API_BASE + path, { method:'PUT', headers: { 'Content-Type':'application/json', ...this.authHeaders() }, body: JSON.stringify(body) });
+          if(!r.ok){ console.warn('PUT', path, 'status', r.status); return null; }
+          return await r.json();
+        }catch(e){ console.warn('PUT failed', path, e); return null; }
+      },
+      async del(path){
+        try{
+          const r = await fetch(API_BASE + path, { method:'DELETE', headers: { 'Content-Type':'application/json', ...this.authHeaders() } });
+          if(!r.ok){ console.warn('DELETE', path, 'status', r.status); return null; }
+          try{return await r.json();}catch(e){ return {ok:true}; }
+        }catch(e){ console.warn('DELETE failed', path, e); return null; }
+      },
+      async upload(path, formData){
+        try{
+          const r = await fetch(API_BASE + path, { method:'POST', body: formData, headers: this.authHeaders() });
+          if(!r.ok){ console.warn('UPLOAD', path, 'status', r.status); return null; }
+          return await r.json();
+        }catch(e){ console.warn('UPLOAD failed', path, e); return null; }
+      },
+      async login(username, password){
+        try{
+          const r = await fetch(API_BASE + '/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username,password}) });
+          if(!r.ok) return null;
+          const j = await r.json();
+          if(j.token){ this.token = j.token; sessionStorage.setItem('hse_token', j.token); return j.user || null; }
+          return null;
+        }catch(e){ console.warn('Login failed', e); return null; }
+      }
+    };
+
+    // Local DB wrapper
+    const LocalDB = {
+      get(k, def=[]){ try{ const v = localStorage.getItem('hse_' + k); return v ? JSON.parse(v) : def; }catch(e){ return def; } },
+      set(k, v){ localStorage.setItem('hse_' + k, JSON.stringify(v)); }
+    };
+
+    // default initialization
+    function ensureDefaults(){
+      if(!localStorage.getItem('hse_users')) LocalDB.set('users', [{username:'admin',password:'admin123',role:'admin'},{username:'user1',password:'user123',role:'user'}]);
+      if(!localStorage.getItem('hse_factories')) LocalDB.set('factories', {
+        "Jangalpur": { fire:0, firstAid:0, manpower:0 },
+        "Dhulagarh": { fire:0, firstAid:0, manpower:0 },
+        "Amta": { fire:0, firstAid:0, manpower:0 },
+        "Panchla": { fire:0, firstAid:0, manpower:0 }
+      });
+      if(!localStorage.getItem('hse_notices')) LocalDB.set('notices', [{id:1,title:'Welcome!',content:'Use the menu above to navigate the HSE Portal.',active:true}]);
+      if(!localStorage.getItem('hse_reports')) LocalDB.set('reports', []);
+      if(!localStorage.getItem('hse_stats')) LocalDB.set('stats', {accidents:0,last:null});
+      if(!localStorage.getItem('hse_ppe')) LocalDB.set('ppe', []);
+      if(!localStorage.getItem('hse_ppe_logs')) LocalDB.set('ppe_logs', []);
+      if(!localStorage.getItem('hse_training')) LocalDB.set('training', { modules: [], records: [] });
+      if(!localStorage.getItem('hse_policies')) LocalDB.set('policies', []);
+      if(!localStorage.getItem('hse_gallery')) LocalDB.set('gallery', []);
+      if(!localStorage.getItem('hse_chat')) LocalDB.set('chat', [{user:'System',text:'Welcome',time:'Now'}]);
+      if(!localStorage.getItem('hse_ptw')) LocalDB.set('ptw', []);
+      if(!localStorage.getItem('hse_visitors')) LocalDB.set('visitors', []);
+    }
+    ensureDefaults();
+
+    // Try remote then fallback local
+    async function fetchOrLocal(apiPath, localKey){
+      const remote = await Remote.get(apiPath);
+      if(remote !== null){ LocalDB.set(localKey, remote); return remote; }
+      return LocalDB.get(localKey);
+    }
+
+    // initial sync (non-blocking)
+    async function initialSync(){
+      await fetchOrLocal('/factories', 'factories');
+      const modules = [
+        {api:'/notices', key:'notices'},
+        {api:'/reports', key:'reports'},
+        {api:'/ppe', key:'ppe'},
+        {api:'/training', key:'training'},
+        {api:'/policies', key:'policies'},
+        {api:'/gallery', key:'gallery'},
+        {api:'/ptw', key:'ptw'},
+        {api:'/visitors', key:'visitors'},
+        {api:'/chat', key:'chat'}
+      ];
+      for(const m of modules) await fetchOrLocal(m.api, m.key);
+      console.log('initialSync complete');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initialSync().then(()=>{ renderNotices(); renderFactories(); refreshStats(); renderGallery(); renderPolicies(); renderPPE(); renderTraining(); renderVisitors(); renderPTWList(); renderChat(); renderUsers(); populateMobileNav(); });
+    });
+
+    // Auth & UI helpers
+    let currentUser = JSON.parse(sessionStorage.getItem('hse_curr'));
+    function checkAuth(){
+      const isLoggedIn = !!currentUser;
+      document.getElementById('loginBtn').style.display = isLoggedIn ? 'none' : 'block';
+      document.getElementById('logoutBtn').style.display = isLoggedIn ? 'block' : 'none';
+      document.getElementById('userBadge').innerText = isLoggedIn ? `${currentUser.username} (${currentUser.role})` : '';
+      const isAdmin = currentUser && currentUser.role==='admin';
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'block' : 'none');
+      if(window.innerWidth < 980) document.getElementById('mobileMenuBtn').style.display = 'block';
+    }
+
+    window.doLogin = async function(){
+      const u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value;
+      // try remote login
+      const ru = await Remote.login(u,p);
+      if(ru){ currentUser = ru; sessionStorage.setItem('hse_curr', JSON.stringify(ru)); document.getElementById('loginOverlay').style.display='none'; checkAuth(); navTo('dashboard'); return; }
+      // fallback local
+      const users = LocalDB.get('users');
+      const user = users.find(x=>x.username===u && x.password===p);
+      if(user){ currentUser=user; sessionStorage.setItem('hse_curr', JSON.stringify(user)); document.getElementById('loginOverlay').style.display='none'; checkAuth(); navTo('dashboard'); }
+      else alert('Invalid credentials');
+    };
+
+    window.doLogout = function(){ sessionStorage.removeItem('hse_curr'); sessionStorage.removeItem('hse_token'); currentUser=null; window.location.reload(); }
+    window.showLogin = function(){ document.getElementById('loginOverlay').style.display='flex'; }
+    window.toggleMobileMenu = function(){ const m = document.getElementById('mobileMenu'); m.style.display = m.style.display==='flex' ? 'none' : 'flex'; populateMobileNav(); }
+
+    window.requireAuthAndGo = function(id){ if(!currentUser){ document.getElementById('loginOverlay').style.display='flex'; return; } navTo(id); }
+    window.navTo = function(id){
+      document.querySelectorAll('main section').forEach(s=>s.style.display='none');
+      const el = document.getElementById(id); if(!el) return; el.style.display='block';
+      document.getElementById('mobileMenu').style.display='none';
+      if(id==='dashboard') renderDashboard();
+      if(id==='ppe') renderPPE();
+      if(id==='training'){ renderTraining(); renderVisitors(); }
+      if(id==='policies') renderPolicies();
+      if(id==='gallery') renderGallery();
+      if(id==='home'){ renderNotices(); renderFactories(); renderChart(); refreshStats(); }
+      if(id==='ptw'){ if(!currentUser){ document.getElementById('loginOverlay').style.display='flex'; return; } renderPTWList(); }
+    };
+
+    function populateMobileNav(){
+      const list = document.getElementById('mobileNavList'); list.innerHTML = '';
+      const items = ['home','dashboard','report','ppe','training','ptw','gallery','policies','contact'];
+      items.forEach(i=>{ const a = document.createElement('a'); a.href='#'; a.innerText = i.charAt(0).toUpperCase()+i.slice(1); a.onclick = ()=>{ navTo(i); return false }; list.appendChild(a); });
+    }
+
+    // Utilities
+    function escapeHtml(s){ if(!s && s!==0) return ''; return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+    function readFileAsDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+    // ------------------- Notices -------------------
+    async function renderNotices(){
+      const remote = await Remote.get('/notices');
+      if(remote!==null){ LocalDB.set('notices', remote); }
+      const notices = LocalDB.get('notices', []).filter(n=>n.active);
+      const list = document.getElementById('activeNoticesList');
+      if(notices.length===0) list.innerHTML = '<div style="font-size:13px; color:rgba(255,255,255,0.8);">No active announcements.</div>';
+      else list.innerHTML = notices.map(n=>`<div class="notice-item"><div class="notice-title">${escapeHtml(n.title)}</div><div class="notice-content">${escapeHtml(n.content)}</div></div>`).join('');
+    }
+
+    window.openNoticeBoardAdmin = function(){ if(!currentUser||currentUser.role!=='admin') return; document.getElementById('noticeBoardModal').style.display='flex'; renderAdminNotices(); }
+    async function renderAdminNotices(){
+      const remote = await Remote.get('/notices'); if(remote!==null) LocalDB.set('notices', remote);
+      const notices = LocalDB.get('notices', []);
+      const tableBody = document.querySelector('#adminNoticeTable tbody');
+      tableBody.innerHTML = notices.map(n=>`<tr><td>${escapeHtml(n.title)}</td><td><input type="checkbox" ${n.active? 'checked':''} onchange="toggleNoticeActive(${n.id}, this.checked)"></td><td><button class="btn-danger btn-sm" onclick="delNotice(${n.id})">Delete</button></td></tr>`).join('') || '<tr><td colspan="3">No notices defined.</td></tr>';
+    }
+
+    window.addNotice = async function(e){
+      e.preventDefault();
+      const title = document.getElementById('noticeTitle').value, content = document.getElementById('noticeContent').value, active = document.getElementById('noticeActive').checked;
+      const obj = { id: Date.now(), title, content, active };
+      const res = await Remote.post('/notices', obj);
+      if(res!==null){ await fetchOrLocal('/notices','notices'); } else { const arr = LocalDB.get('notices'); arr.push(obj); LocalDB.set('notices', arr); }
+      e.target.reset(); renderAdminNotices(); renderNotices();
+    };
+
+    window.toggleNoticeActive = async function(id, active){
+      const res = await Remote.put(`/notices/${id}`, { active });
+      if(res!==null){ await fetchOrLocal('/notices','notices'); renderNotices(); renderAdminNotices(); return; }
+      const arr = LocalDB.get('notices'); const idx=arr.findIndex(x=>x.id===id); if(idx>-1){ arr[idx].active=active; LocalDB.set('notices', arr); renderNotices(); renderAdminNotices(); }
+    };
+
+    window.delNotice = async function(id){ if(!confirm('Delete this notice?')) return; const res = await Remote.del(`/notices/${id}`); if(res!==null){ await fetchOrLocal('/notices','notices'); } else { LocalDB.set('notices', LocalDB.get('notices').filter(x=>x.id!==id)); } renderAdminNotices(); renderNotices(); }
+
+    // ------------------- Factories -------------------
+    async function renderFactories(){
+      const remote = await Remote.get('/factories');
+      let data = LocalDB.get('factories', {});
+      if(remote!==null) { data = arrayToFactoryObj(remote); LocalDB.set('factories', data); }
+      const container = document.getElementById('factoriesContainer'); container.innerHTML = '';
+      let totalManpower = 0;
+      Object.keys(data).forEach(factoryName => {
+        const f = data[factoryName]; totalManpower += parseInt(f.manpower||0);
+        const div = document.createElement('div'); div.className='factory-card';
+        div.innerHTML = `<div class="factory-title">${escapeHtml(factoryName)}</div><div class="stat-row"><span>Fire Extinguishers</span><strong>${f.fire}</strong></div><div class="stat-row"><span>First Aid Boxes</span><strong>${f.firstAid}</strong></div><div class="stat-row"><span>Manpower</span><strong>${f.manpower}</strong></div>`;
+        container.appendChild(div);
+      });
+      const reps = LocalDB.get('reports', []).length;
+      const ratio = totalManpower>0 ? ((reps/totalManpower)*100).toFixed(2) : 0;
+      document.getElementById('accRatio').innerText = ratio + '%';
+      document.getElementById('openPTWs').innerText = (LocalDB.get('ptw', []).filter(p=>p.status==='Pending').length);
+      populateFactorySelects();
+    }
+
+    function arrayToFactoryObj(arr){
+      if(!arr) return {};
+      if(Array.isArray(arr)){ const o={}; arr.forEach(f=>o[f.name] = { fire: f.fire||0, firstAid: f.firstAid||0, manpower: f.manpower||0 }); return o; }
+      return arr;
+    }
+
+    window.openSiteStats = function(){ document.getElementById('siteStatsModal').style.display='flex'; loadFactoryData(); }
+    window.loadFactoryData = function(){
+      const factory = document.getElementById('factorySelect').value; const data = LocalDB.get('factories', {});
+      const f = data[factory] || { fire:0, firstAid:0, manpower:0 };
+      document.getElementById('editFire').value = f.fire; document.getElementById('editFirstAid').value = f.firstAid; document.getElementById('editManpower').value = f.manpower;
+    };
+
+    window.saveSiteStats = async function(){
+      const factory = document.getElementById('factorySelect').value;
+      const data = LocalDB.get('factories', {});
+      data[factory] = { fire: parseInt(document.getElementById('editFire').value||0), firstAid: parseInt(document.getElementById('editFirstAid').value||0), manpower: parseInt(document.getElementById('editManpower').value||0) };
+      const payload = Object.keys(data).map(name=>({ name, ...data[name] }));
+      const res = await Remote.put('/factories', payload);
+      if(res!==null){ LocalDB.set('factories', arrayToFactoryObj(res)); } else { LocalDB.set('factories', data); }
+      document.getElementById('siteStatsModal').style.display='none'; renderFactories();
+    };
+
+    // ------------------- Reports -------------------
+    document.getElementById('incForm').onsubmit = async function(e){
+      e.preventDefault();
+      const r = { id: Date.now(), reporter: document.getElementById('rName').value, loc: document.getElementById('rLoc').value, date: document.getElementById('rDate').value, sev: document.getElementById('rSev').value, desc: document.getElementById('rDesc').value };
+      const photoFile = document.getElementById('rPhoto').files[0];
+      if(photoFile) r.photo = await readFileAsDataURL(photoFile);
+      const res = await Remote.post('/reports', r);
+      if(res!==null){ await fetchOrLocal('/reports','reports'); } else { const arr = LocalDB.get('reports'); arr.unshift(r); LocalDB.set('reports', arr); }
+      e.target.reset(); alert('Report Saved'); refreshStats();
+    };
+
+    // ------------------- PPE -------------------
+    async function renderPPE(){
+      const remote = await Remote.get('/ppe');
+      if(remote!==null) LocalDB.set('ppe', remote);
+      const items = LocalDB.get('ppe', []), logs = LocalDB.get('ppe_logs', []);
+      document.querySelector('#ppeTable tbody').innerHTML = items.map(i => {
+        const status = (i.qty <= i.reorder) ? '<span style="color:red;font-weight:bold">Low</span>' : 'OK';
+        const actions = `<button class="btn-action btn-sm" onclick="issuePPE(${i.id})">Issue</button>` + (currentUser && currentUser.role==='admin' ? `<button class="btn-danger btn-sm" onclick="delPPE(${i.id})">Del</button>` : '');
+        return `<tr><td>${escapeHtml(i.name)}</td><td>${i.qty}</td><td>${escapeHtml(i.unit)}</td><td>${status}</td><td>${actions}</td></tr>`;
+      }).join('') || '<tr><td colspan="5">No Stock</td></tr>';
+      document.getElementById('ppeRestockSelect').innerHTML = '<option value="">Select Item</option>' + items.map(i=>`<option value="${i.id}">${escapeHtml(i.name)}</option>`).join('');
+      document.querySelector('#ppeLogTable tbody').innerHTML = logs.slice(0,10).map(l=>`<tr><td>${l.date}</td><td>${escapeHtml(l.item)}</td><td>${l.qty}</td><td>${escapeHtml(l.to)}</td></tr>`).join('');
+    }
+
+    window.addPPEItem = async function(e){
+      e.preventDefault();
+      const item = { id: Date.now(), name: document.getElementById('ppeName').value, qty: parseInt(document.getElementById('ppeInitialQty').value||0), unit: document.getElementById('ppeUnit').value, reorder: parseInt(document.getElementById('ppeReorder').value||0) };
+      const res = await Remote.post('/ppe', item);
+      if(res!==null) await fetchOrLocal('/ppe','ppe'); else { const arr=LocalDB.get('ppe'); arr.push(item); LocalDB.set('ppe', arr); }
+      e.target.reset(); renderPPE();
+    };
+
+    window.restockPPE = async function(e){
+      e.preventDefault();
+      const id = parseInt(document.getElementById('ppeRestockSelect').value), qty = parseInt(document.getElementById('ppeRestockQty').value||0);
+      if(!id||!qty) return alert('Choose item and qty');
+      const res = await Remote.post('/ppe', { action:'restock', id, qty });
+      if(res!==null) await fetchOrLocal('/ppe','ppe'); else { const items = LocalDB.get('ppe'); const idx = items.findIndex(x=>x.id===id); if(idx>-1){ items[idx].qty += qty; LocalDB.set('ppe', items);} }
+      e.target.reset(); renderPPE(); alert('Stock Updated');
+    };
+
+    window.issuePPE = async function(id){
+      const qty = parseInt(prompt('Issue how many?')); if(!qty) return alert('Invalid qty');
+      const to = prompt('Issued to:'); if(!to) return;
+      const res = await Remote.post('/ppe', { action:'issue', id, qty, to });
+      if(res!==null){ await fetchOrLocal('/ppe','ppe'); const logs = LocalDB.get('ppe_logs'); logs.unshift({date:new Date().toLocaleDateString(), item:res.item||'Item', qty, to}); LocalDB.set('ppe_logs', logs); }
+      else {
+        const items = LocalDB.get('ppe'); const idx = items.findIndex(x=>x.id===id); if(idx===-1) return alert('Item not found'); if(qty>items[idx].qty) return alert('Insufficient stock'); items[idx].qty -= qty; LocalDB.set('ppe', items); const logs = LocalDB.get('ppe_logs'); logs.unshift({date:new Date().toLocaleDateString(), item: items[idx].name, qty, to}); LocalDB.set('ppe_logs', logs);
+      }
+      renderPPE();
+    };
+
+    window.delPPE = async function(id){ if(!confirm('Delete?')) return; const res = await Remote.del(`/ppe/${id}`); if(res!==null) await fetchOrLocal('/ppe','ppe'); else LocalDB.set('ppe', LocalDB.get('ppe').filter(x=>x.id!==id)); renderPPE(); }
+
+    // ------------------- Training -------------------
+    async function renderTraining(){
+      const remote = await Remote.get('/training');
+      if(remote!==null) LocalDB.set('training', remote);
+      const training = LocalDB.get('training', { modules: [], records: [] });
+      const mods = training.modules || [], recs = training.records || [];
+      document.getElementById('recMod').innerHTML = '<option value="">Select Module</option>' + mods.map(m=>`<option value="${escapeHtml(m.name)}">${escapeHtml(m.name)}</option>`).join('');
+      document.querySelector('#modTable tbody').innerHTML = mods.map(m=>`<tr><td>${escapeHtml(m.name)}</td><td>${m.freq} Months</td>${currentUser && currentUser.role==='admin' ? `<td><button class="btn-danger btn-sm" onclick="delMod(${m.id})">Del</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="3">No Modules</td></tr>';
+      document.querySelector('#recTable tbody').innerHTML = recs.map(r=>{ const mod = mods.find(m=>m.name===r.mod); const freq = mod? parseInt(mod.freq):12; const due = new Date(r.date); due.setMonth(due.getMonth()+freq); const delBtn = currentUser && currentUser.role==='admin'? `<td><button class="btn-danger btn-sm" onclick="delRec(${r.id})">Del</button></td>`:''; return `<tr><td>${escapeHtml(r.emp)}</td><td>${escapeHtml(r.mod)}</td><td>${escapeHtml(r.date)}</td><td>${due.toLocaleDateString()}</td>${delBtn}</tr>`; }).join('') || '<tr><td colspan="5">No Records</td></tr>';
+    }
+
+    window.addModule = async function(e){
+      e.preventDefault();
+      const m = { id: Date.now(), name: document.getElementById('modName').value, freq: document.getElementById('modFreq').value };
+      const res = await Remote.post('/training', { action:'addModule', module: m });
+      if(res!==null) await fetchOrLocal('/training','training'); else { const tr = LocalDB.get('training'); tr.modules.push(m); LocalDB.set('training', tr); }
+      e.target.reset(); renderTraining();
+    };
+
+    window.addRecord = async function(e){
+      e.preventDefault();
+      const r = { id: Date.now(), emp: document.getElementById('recName').value, mod: document.getElementById('recMod').value, date: document.getElementById('recDate').value };
+      const res = await Remote.post('/training', { action:'addRecord', record: r });
+      if(res!==null) await fetchOrLocal('/training','training'); else { const tr = LocalDB.get('training'); tr.records.push(r); LocalDB.set('training', tr); }
+      e.target.reset(); renderTraining();
+    };
+
+    window.delMod = async function(id){ if(!confirm('Delete?')) return; const res = await Remote.del(`/training/${id}`); if(res!==null) await fetchOrLocal('/training','training'); else { const tr = LocalDB.get('training'); tr.modules = tr.modules.filter(x=>x.id!==id); LocalDB.set('training', tr); } renderTraining(); }
+    window.delRec = async function(id){ if(!confirm('Delete?')) return; const res = await Remote.del(`/training/${id}`); if(res!==null) await fetchOrLocal('/training','training'); else { const tr = LocalDB.get('training'); tr.records = tr.records.filter(x=>x.id!==id); LocalDB.set('training', tr); } renderTraining(); }
+    // ------------------- Visitors -------------------
+    async function addVisitor(e){
+      e.preventDefault();
+      const ppeNodes = Array.from(document.querySelectorAll('#visitorForm input[name="ppe"]:checked')).map(n=>n.value);
+      if(document.getElementById('visPPEOtherChk').checked && document.getElementById('visPPEOtherText').value.trim()) ppeNodes.push(document.getElementById('visPPEOtherText').value.trim());
+      const photoFile = document.getElementById('visPhoto').files[0];
+      const rec = { id: Date.now(), name: document.getElementById('visName').value.trim(), company: document.getElementById('visCompany').value.trim(), personMeet: document.getElementById('visPersonMeet').value.trim(), mobile: document.getElementById('visMobile').value.trim(), factory: document.getElementById('visFactory').value, purpose: document.getElementById('visPurpose').value.trim(), briefing: document.getElementById('visBrief').checked, ppe: ppeNodes, inTime: new Date().toISOString() };
+      if(photoFile){
+        const fd = new FormData(); fd.append('file', photoFile); fd.append('meta', JSON.stringify({ id: rec.id, name: rec.name }));
+        const upl = await Remote.upload('/visitors', fd);
+        if(upl && upl.url) rec.photo = upl.url; else rec.photo = await readFileAsDataURL(photoFile);
+      }
+      const res = await Remote.post('/visitors', rec);
+      if(res!==null) await fetchOrLocal('/visitors','visitors'); else { const arr = LocalDB.get('visitors'); arr.unshift(rec); LocalDB.set('visitors', arr); }
+      document.getElementById('visitorForm').reset(); alert('Visitor recorded. Certificate will open and download.'); renderVisitors(); generateVisitorCertificate(rec.id);
+    }
+
+    async function renderVisitors(){
+      const remote = await Remote.get('/visitors'); if(remote!==null) LocalDB.set('visitors', remote);
+      const rows = LocalDB.get('visitors', []); const tbody = document.querySelector('#visitorTable tbody');
+      tbody.innerHTML = rows.map(r=>{ const ppe = r.ppe && r.ppe.length ? r.ppe.join(', '):'-'; const brief = r.briefing ? 'Yes':'No'; const photoTag = r.photo ? `<img src="${r.photo}" class="visitor-photo">` : ''; const actions = `${currentUser && currentUser.role==='admin' ? `<button class="btn-danger btn-sm" onclick="delVisitor(${r.id})">Delete</button>` : ''} <button class="ghost-dark btn-sm" onclick="generateVisitorCertificate(${r.id})">Certificate</button>`; return `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.company)}</td><td>${escapeHtml(r.mobile)}</td><td>${new Date(r.inTime).toLocaleString()}</td><td>${brief}</td><td>${escapeHtml(ppe)}</td><td>${escapeHtml(r.factory||'-')}</td><td>${actions}</td></tr>`; }).join('') || '<tr><td colspan="8">No visitors recorded.</td></tr>';
+    }
+
+    async function delVisitor(id){ if(!confirm('Delete visitor record?')) return; const res = await Remote.del(`/visitors/${id}`); if(res!==null) await fetchOrLocal('/visitors','visitors'); else LocalDB.set('visitors', LocalDB.get('visitors').filter(x=>x.id!==id)); renderVisitors(); }
+
+    function generateVisitorCertificate(id){
+      const r = LocalDB.get('visitors').find(v=>v.id===id); if(!r) return alert('Record not found');
+      const issuedOn = new Date(r.inTime).toLocaleString(); const ppeHtml = r.ppe && r.ppe.length ? escapeHtml(r.ppe.join(', ')) : 'None'; const photoHtml = r.photo ? `<img src="${r.photo}" style="width:120px;height:120px;object-fit:cover;border:1px solid #ddd;border-radius:6px">` : '';
+      const html = `<html><head><title>Visitor Induction - ${escapeHtml(r.name)}</title><style>body{font-family:Arial,Helvetica,sans-serif;padding:20px;color:#111}.card{border:1px solid #ccc;padding:18px;border-radius:8px;max-width:800px;margin:0 auto}h1{margin:0 0 8px;font-size:20px}.muted{color:#555;font-size:13px}table{width:100%;border-collapse:collapse;margin-top:12px}td,th{padding:8px;border:1px solid #eee;text-align:left}.sig{margin-top:20px;display:flex;justify-content:space-between;align-items:center}</style></head><body><div class="card"><h1>TARSONS PRODUCTS - Visitor Induction Certificate</h1><div class="muted">Issued: ${issuedOn}</div><table><tr><th>Name</th><td>${escapeHtml(r.name)}</td><th>Company</th><td>${escapeHtml(r.company)}</td></tr><tr><th>Person to Meet</th><td>${escapeHtml(r.personMeet)}</td><th>Mobile</th><td>${escapeHtml(r.mobile)}</td></tr><tr><th>Factory</th><td>${escapeHtml(r.factory||'-')}</td><th>Purpose</th><td>${escapeHtml(r.purpose)}</td></tr><tr><th>Safety Briefing</th><td>${r.briefing ? 'Yes' : 'No'}</td><th>PPE Issued</th><td>${ppeHtml}</td></tr></table><div style="margin-top:12px">${photoHtml}</div><div class="sig"><div><div style="margin-top:120px">_____________________</div><div style="font-size:13px;color:#555">Security Officer Signature</div></div><div><div style="margin-top:120px">_____________________</div><div style="font-size:13px;color:#555">Visitor Signature</div></div></div></body></html>`;
+      const win = window.open('', '_blank'); win.document.write(html); win.document.close();
+      try{ const blob = new Blob([html], {type:'text/html'}); const url = URL.createObjectURL(blob); const a = win.document.createElement('a'); a.href = url; a.download = `Visitor_Induction_${r.name.replace(/\s+/g,'_')}_${r.id}.html`; win.document.body.appendChild(a); a.click(); a.remove(); }catch(e){ const blob = new Blob([html], {type:'text/html'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `Visitor_Induction_${r.name.replace(/\s+/g,'_')}_${r.id}.html`; document.body.appendChild(a); a.click(); a.remove(); }
+    }
+
+    // ------------------- Policies & Gallery -------------------
+    async function renderPolicies(){
+      const remote = await Remote.get('/policies'); if(remote!==null) LocalDB.set('policies', remote);
+      const list = LocalDB.get('policies', []); const gallery = document.getElementById('policyGallery'); const isAdmin = currentUser && currentUser.role==='admin';
+      gallery.innerHTML = list.map(p=>`<div class="pdf-item">${isAdmin?`<div class="gal-del" onclick="delPolicy(${p.id})">X</div>`:''}<a href="#" onclick="openPDF('${p.data||p.url}')">📄</a><div class="pdf-title" title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</div></div>`).join('') || '<p style="color:grey">No policies.</p>';
+    }
+
+    window.uploadPolicy = async function(e){
+      e.preventDefault();
+      const title = document.getElementById('polTitle').value; const file = document.getElementById('polFile').files[0];
+      if(!file) return alert('Choose file'); const fd = new FormData(); fd.append('file', file); fd.append('title', title);
+      const res = await Remote.upload('/policies', fd);
+      if(res!==null) await fetchOrLocal('/policies','policies'); else { const base64 = await readFileAsDataURL(file); const pols = LocalDB.get('policies'); pols.push({ id: Date.now(), title, data: base64 }); LocalDB.set('policies', pols); }
+      e.target.reset(); renderPolicies();
+    };
+
+    window.delPolicy = async function(id){ if(!confirm('Delete?')) return; const res = await Remote.del(`/policies/${id}`); if(res!==null) await fetchOrLocal('/policies','policies'); else LocalDB.set('policies', LocalDB.get('policies').filter(x=>x.id!==id)); renderPolicies(); }
+    function openPDF(data){ const win = window.open(); win.document.write('<iframe src="'+data+'" frameborder="0" style="border:0;width:100%;height:100vh"></iframe>'); }
+
+    async function renderGallery(){
+      const remote = await Remote.get('/gallery'); if(remote!==null) LocalDB.set('gallery', remote);
+      const photos = LocalDB.get('gallery', []); const grid = document.getElementById('galleryGrid'); const isAdmin = currentUser && currentUser.role==='admin';
+      grid.innerHTML = photos.map(p=>`<div class="gallery-item" style="position:relative;"><img src="${p.url||p.data}" onclick="document.getElementById('fullscreenModal').style.display='flex';document.getElementById('fsImg').src='${p.url||p.data}'">${isAdmin?`<div class="gal-del" onclick="delPhoto(${p.id})">X</div>`:''}</div>`).join('');
+    }
+
+    window.uploadPhoto = async function(){
+      const file = document.getElementById('galUpload').files[0]; if(!file) return alert('Select file'); const fd = new FormData(); fd.append('file', file);
+      const res = await Remote.upload('/gallery', fd);
+      if(res!==null) await fetchOrLocal('/gallery','gallery'); else { const base64 = await readFileAsDataURL(file); const photos = LocalDB.get('gallery'); photos.push({ id: Date.now(), url: base64 }); LocalDB.set('gallery', photos); }
+      renderGallery();
+    };
+
+    window.delPhoto = async function(id){ if(!confirm('Delete?')) return; const res = await Remote.del(`/gallery/${id}`); if(res!==null) await fetchOrLocal('/gallery','gallery'); else LocalDB.set('gallery', LocalDB.get('gallery').filter(x=>x.id!==id)); renderGallery(); }
+
+    // ------------------- PTW -------------------
+    async function renderPTWList(filter){
+      const remote = await Remote.get('/ptw'); if(remote!==null) LocalDB.set('ptw', remote);
+      const list = LocalDB.get('ptw', []); const factoryFilter = document.getElementById('ptwFactoryFilter').value; const kw = document.getElementById('ptwSearch').value.toLowerCase();
+      const rows = list.filter(p=>{ if(filter==='pending') return p.status==='Pending'; if(filter==='approved') return p.status==='Approved'; if(filter==='rejected') return p.status==='Rejected'; return true }).filter(p => (factoryFilter? p.factory===factoryFilter : true)).filter(p => (!kw ? true : (p.requester||'').toLowerCase().includes(kw) || (p.location||'').toLowerCase().includes(kw) || (p.desc||'').toLowerCase().includes(kw)));
+      document.querySelector('#ptwTable tbody').innerHTML = rows.map(p=>`<tr><td>${p.id}</td><td>${new Date(p.date||p.createdAt||Date.now()).toLocaleDateString()}</td><td>${escapeHtml(p.type)}</td><td>${escapeHtml(p.factory)}</td><td>${escapeHtml(p.location||p.loc||'-')}</td><td>${escapeHtml(p.requester)}</td><td>${escapeHtml(p.status||'Pending')}</td><td><button class="btn-sm" onclick="approvePTW(${p.id})">Approve</button> <button class="btn-sm" onclick="rejectPTW(${p.id})">Reject</button></td></tr>`).join('') || '<tr><td colspan="8">No PTWs</td></tr>';
+    }
+
+    window.openPTWModal = function(){ document.getElementById('ptwModal').style.display='flex'; }
+    window.createPTW = async function(e){
+      e.preventDefault();
+      const ptw = { id: Date.now(), requester: document.getElementById('ptwRequester').value, type: document.getElementById('ptwType').value, factory: document.getElementById('ptwFactory').value, location: document.getElementById('ptwLocation').value, desc: document.getElementById('ptwDesc').value, status:'Pending', date: new Date().toISOString() };
+      const res = await Remote.post('/ptw', ptw); if(res!==null) await fetchOrLocal('/ptw','ptw'); else { const arr = LocalDB.get('ptw'); arr.unshift(ptw); LocalDB.set('ptw', arr); }
+      document.getElementById('ptwModal').style.display='none'; renderPTWList();
+    };
+
+    async function approvePTW(id){ await updatePTWStatus(id,'Approved'); }
+    async function rejectPTW(id){ await updatePTWStatus(id,'Rejected'); }
+    async function updatePTWStatus(id, status){
+      const res = await Remote.put(`/ptw/${id}`, { status });
+      if(res!==null){ await fetchOrLocal('/ptw','ptw'); renderPTWList(); return; }
+      const list = LocalDB.get('ptw'); const idx = list.findIndex(x=>x.id===id); if(idx>-1){ list[idx].status = status; LocalDB.set('ptw', list); renderPTWList(); }
+    }
+
+    // ------------------- Dashboard & Chart -------------------
+    function renderDashboard(){ const reps = LocalDB.get('reports', []); document.querySelector('#dashTable tbody').innerHTML = reps.map(r=>`<tr><td>${new Date(r.date).toLocaleDateString()}</td><td>${escapeHtml(r.reporter)}</td><td>${escapeHtml(r.sev)}</td><td>${escapeHtml(r.desc)}</td></tr>`).join('') || '<tr><td colspan="4">No reports</td></tr>'; }
+
+    let chartInstance = null;
+    function renderChart(){
+      const ctx = document.getElementById('incidentChart').getContext('2d');
+      const reports = LocalDB.get('reports', []);
+      const counts = { Low:0, Medium:0, High:0, Fatal:0 };
+      reports.forEach(r => { if(counts[r.sev]!==undefined) counts[r.sev]++; });
+      if(chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, { type:'bar', data:{ labels:Object.keys(counts), datasets:[{ label:'Incidents', data:Object.values(counts) }] }, options:{ responsive:true, maintainAspectRatio:false } });
+    }
+
+    function refreshStats(){
+      const stats = LocalDB.get('stats', {accidents:0,last:null});
+      const reports = LocalDB.get('reports', []);
+      document.getElementById('totalReports').innerText = reports.length;
+      if(stats.last){ const diffTime = Math.abs(new Date() - new Date(stats.last)); document.getElementById('safeDays').innerText = Math.floor(diffTime/(1000*60*60*24)); } else { document.getElementById('safeDays').innerText = reports.length>0 ? '0' : '-'; }
+      renderFactories(); renderChart();
+    }
+
+    // ------------------- Chat -------------------
+    async function renderChat(){
+      const remote = await Remote.get('/chat'); if(remote!==null) LocalDB.set('chat', remote);
+      const msgs = LocalDB.get('chat', []);
+      document.getElementById('chatBody').innerHTML = msgs.map(m=>`<div class="chat-msg ${m.user===currentUser?.username ? 'me':'other'}"><b>${escapeHtml(m.user)}:</b> ${escapeHtml(m.text)} <div style="font-size:11px;color:#666">${escapeHtml(m.time)}</div></div>`).join('');
+      document.getElementById('chatBody').scrollTop = document.getElementById('chatBody').scrollHeight;
+    }
+
+    window.toggleChat = function(){ const box = document.getElementById('hseChatBox'); box.classList.toggle('open'); if(box.classList.contains('open')) renderChat(); }
+    window.sendChat = async function(){
+      const txt = document.getElementById('chatInput').value.trim(); if(!txt) return;
+      const msg = { id: Date.now(), user: currentUser ? currentUser.username : 'Guest', text: txt, time: new Date().toLocaleString() };
+      const res = await Remote.post('/chat', msg);
+      if(res!==null) await fetchOrLocal('/chat','chat'); else { const arr = LocalDB.get('chat'); arr.push(msg); LocalDB.set('chat', arr); }
+      document.getElementById('chatInput').value=''; renderChat();
+    };
+
+    // ------------------- Users (local) -------------------
+    window.addNewUser = function(){
+      const u = document.getElementById('newU').value, p = document.getElementById('newP').value, r = document.getElementById('newR').value;
+      if(!u||!p) return alert('User and pass required');
+      const users = LocalDB.get('users'); users.push({ username:u, password:p, role:r }); LocalDB.set('users', users); renderUsers();
+    };
+    function renderUsers(){ const list = document.getElementById('usersList'); list.innerHTML = LocalDB.get('users', []).map(u=>`<li style="padding:6px;border-bottom:1px solid #eee">${escapeHtml(u.username)} (${escapeHtml(u.role)})</li>`).join(''); }
+
+    // ------------------- Helpers & finalization -------------------
+    function exportJSON(){
+      const dump = {
+        users: LocalDB.get('users'),
+        factories: LocalDB.get('factories'),
+        notices: LocalDB.get('notices'),
+        reports: LocalDB.get('reports'),
+        ppe: LocalDB.get('ppe'),
+        ppe_logs: LocalDB.get('ppe_logs'),
+        training: LocalDB.get('training'),
+        policies: LocalDB.get('policies'),
+        gallery: LocalDB.get('gallery'),
+        ptw: LocalDB.get('ptw'),
+        visitors: LocalDB.get('visitors'),
+        chat: LocalDB.get('chat')
+      };
+      const blob = new Blob([JSON.stringify(dump, null, 2)], { type:'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hse_dump_'+Date.now()+'.json'; document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    function populateFactorySelects(){ const data = LocalDB.get('factories', {}); const sel = document.getElementById('factorySelect'); if(sel) sel.innerHTML = Object.keys(data).map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join(''); const pf = document.getElementById('ptwFactoryFilter'); if(pf) pf.innerHTML = '<option value="">All</option>' + Object.keys(data).map(n=>`<option>${escapeHtml(n)}</option>`).join(''); }
+
+    // Expose inline functions
+    window.renderNotices = renderNotices;
+    window.renderFactories = renderFactories;
+    window.refreshStats = refreshStats;
+    window.renderPPE = renderPPE;
+    window.renderTraining = renderTraining;
+    window.renderVisitors = renderVisitors;
+    window.renderPTWList = renderPTWList;
+    window.renderGallery = renderGallery;
+    window.renderPolicies = renderPolicies;
+    window.renderChat = renderChat;
+    window.exportJSON = exportJSON;
+    window.openManageUsers = ()=>{ document.getElementById('manageUsersModal').style.display='flex'; renderUsers(); };
+
+    // initial auth/UI setup
+    document.addEventListener('DOMContentLoaded', ()=>{ checkAuth(); renderUsers(); });
+  })();
+  </script>
+</body>
+</html>
+
