@@ -64,8 +64,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// helper: generic list endpoints generator (we'll implement routes below)
-
 // ---------- Generic CRUD helper functions ----------
 function getAll(moduleName){
   return readJSON(moduleName);
@@ -141,28 +139,39 @@ app.delete('/api/reports/:id', (req,res)=>{
 app.get('/api/ppe', (req,res)=> res.json(getAll('ppe')));
 app.post('/api/ppe', (req,res)=>{
   const body = req.body;
-  // support actions: restock/issue handled on frontend by sending action, but we store generic
+
   if(body.action){
-    // action handling for ppe (restock / issue)
     const items = readJSON('ppe');
+
     if(body.action === 'restock'){
       const idx = items.findIndex(x=>Number(x.id)===Number(body.id));
-      if(idx!==-1){ items[idx].qty = (items[idx].qty||0) + Number(body.qty||0); writeJSON('ppe', items); return res.json(items[idx]); }
+      if(idx!==-1){ 
+        items[idx].qty = (items[idx].qty||0) + Number(body.qty||0); 
+        writeJSON('ppe', items); 
+        return res.json(items[idx]); 
+      }
       return res.status(404).json({error:'Item not found'});
     }
+
     if(body.action === 'issue'){
       const idx = items.findIndex(x=>Number(x.id)===Number(body.id));
       if(idx===-1) return res.status(404).json({error:'Item not found'});
-      if((items[idx].qty||0) < Number(body.qty||0)) return res.status(400).json({error:'Insufficient stock'});
+      if((items[idx].qty||0) < Number(body.qty||0)) 
+        return res.status(400).json({error:'Insufficient stock'});
+      
       items[idx].qty = items[idx].qty - Number(body.qty||0);
       writeJSON('ppe', items);
-      // save log
-      const logs = readJSON('ppe_logs'); logs.unshift({ date: new Date().toISOString(), item: items[idx].name, qty: body.qty, to: body.to || '' }); writeJSON('ppe_logs', logs);
+
+      const logs = readJSON('ppe_logs');
+      logs.unshift({ date: new Date().toISOString(), item: items[idx].name, qty: body.qty, to: body.to || '' });
+      writeJSON('ppe_logs', logs);
+
       return res.json({ ok:true, item: items[idx] });
     }
+
     return res.status(400).json({error:'Unknown action'});
   }
-  // otherwise create new PPE item
+
   if(!body.id) body.id = Date.now();
   insertOne('ppe', body);
   res.json(body);
@@ -177,30 +186,44 @@ app.delete('/api/ppe/:id', (req,res)=>{
   res.json({ok:true});
 });
 
-// ---------- Training (modules + records) ----------
+// ---------- Training ----------
 app.get('/api/training', (req,res)=> res.json(readJSON('training')));
 app.post('/api/training', (req,res)=>{
   const body = req.body;
-  // handle actions as frontend expects: { action:'addModule', module: m } or { action:'addRecord', record: r }
   const tr = readJSON('training');
+
   if(body.action === 'addModule' && body.module){
-    const m = body.module; if(!m.id) m.id = Date.now();
-    tr.modules.push(m); writeJSON('training', tr); return res.json(tr);
+    const m = body.module; 
+    if(!m.id) m.id = Date.now();
+    tr.modules.push(m); 
+    writeJSON('training', tr); 
+    return res.json(tr);
   }
+
   if(body.action === 'addRecord' && body.record){
-    const r = body.record; if(!r.id) r.id = Date.now();
-    tr.records.push(r); writeJSON('training', tr); return res.json(tr);
+    const r = body.record; 
+    if(!r.id) r.id = Date.now();
+    tr.records.push(r); 
+    writeJSON('training', tr); 
+    return res.json(tr);
   }
-  // fallback: create generic
+
   res.status(400).json({error:'Unsupported action'});
 });
 app.put('/api/training/:id', (req,res)=>{
-  // used for updating modules/records by id - search in both arrays
   const tr = readJSON('training');
   let idx = tr.modules.findIndex(x=>Number(x.id)===Number(req.params.id));
-  if(idx!==-1){ tr.modules[idx] = Object.assign({}, tr.modules[idx], req.body); writeJSON('training', tr); return res.json(tr.modules[idx]); }
+  if(idx!==-1){ 
+    tr.modules[idx] = Object.assign({}, tr.modules[idx], req.body); 
+    writeJSON('training', tr); 
+    return res.json(tr.modules[idx]); 
+  }
   idx = tr.records.findIndex(x=>Number(x.id)===Number(req.params.id));
-  if(idx!==-1){ tr.records[idx] = Object.assign({}, tr.records[idx], req.body); writeJSON('training', tr); return res.json(tr.records[idx]); }
+  if(idx!==-1){ 
+    tr.records[idx] = Object.assign({}, tr.records[idx], req.body); 
+    writeJSON('training', tr); 
+    return res.json(tr.records[idx]); 
+  }
   res.status(404).json({error:'Not found'});
 });
 app.delete('/api/training/:id', (req,res)=>{
@@ -214,8 +237,10 @@ app.delete('/api/training/:id', (req,res)=>{
 // ---------- PTW ----------
 app.get('/api/ptw', (req,res)=> res.json(readJSON('ptw')));
 app.post('/api/ptw', (req,res)=>{
-  const body = req.body; if(!body.id) body.id = Date.now();
-  insertOne('ptw', body); res.json(body);
+  const body = req.body; 
+  if(!body.id) body.id = Date.now();
+  insertOne('ptw', body); 
+  res.json(body);
 });
 app.put('/api/ptw/:id', (req,res)=>{
   const u = updateOne('ptw', req.params.id, req.body);
@@ -227,42 +252,56 @@ app.delete('/api/ptw/:id', (req,res)=>{
   res.json({ok:true});
 });
 
-// ---------- Visitors (supports file upload) ----------
+// ---------- Visitors ----------
 app.get('/api/visitors', (req,res)=> res.json(readJSON('visitors')));
 app.post('/api/visitors', upload.single('file'), (req,res)=>{
   let body = req.body;
-  // If multipart, multer put file in req.file and non-file fields in req.body
+
   if(req.file){
-    // if meta provided in body.meta (frontend sets meta JSON)
     try{ const meta = JSON.parse(body.meta || '{}'); body = Object.assign({}, meta, body); }catch(e){}
     body.photo = '/uploads/' + req.file.filename;
-  } else if(body.photo && body.photo.startsWith('data:')) {
-    // If front-end sent base64 as JSON, keep it (no file saved)
-  }
+  } else if(body.photo && body.photo.startsWith('data:')) {}
+
   if(!body.id) body.id = Date.now();
   insertOne('visitors', body);
   res.json(body);
 });
-app.put('/api/visitors/:id', (req,res)=>{ const u = updateOne('visitors', req.params.id, req.body); if(!u) return res.status(404).json({error:'Not found'}); res.json(u); });
-app.delete('/api/visitors/:id', (req,res)=>{ if(!deleteOne('visitors', req.params.id)) return res.status(404).json({error:'Not found'}); res.json({ok:true}); });
+app.put('/api/visitors/:id', (req,res)=>{ 
+  const u = updateOne('visitors', req.params.id, req.body); 
+  if(!u) return res.status(404).json({error:'Not found'}); 
+  res.json(u); 
+});
+app.delete('/api/visitors/:id', (req,res)=>{ 
+  if(!deleteOne('visitors', req.params.id)) return res.status(404).json({error:'Not found'}); 
+  res.json({ok:true}); 
+});
 
-// ---------- Policies (PDF uploads) ----------
+// ---------- Policies ----------
 app.get('/api/policies', (req,res)=> res.json(readJSON('policies')));
 app.post('/api/policies', upload.single('file'), (req,res)=>{
-  const title = req.body.title || req.body.title || `Policy ${Date.now()}`;
+  const title = req.body.title || `Policy ${Date.now()}`;
   let obj = { id: Date.now(), title };
+
   if(req.file){
     obj.url = '/uploads/' + req.file.filename;
   } else if(req.body.data){
-    obj.data = req.body.data; // base64 from frontend
+    obj.data = req.body.data;
   }
+
   insertOne('policies', obj);
   res.json(obj);
 });
-app.put('/api/policies/:id', (req,res)=>{ const u = updateOne('policies', req.params.id, req.body); if(!u) return res.status(404).json({error:'Not found'}); res.json(u); });
-app.delete('/api/policies/:id', (req,res)=>{ if(!deleteOne('policies', req.params.id)) return res.status(404).json({error:'Not found'}); res.json({ok:true}); });
+app.put('/api/policies/:id', (req,res)=>{ 
+  const u = updateOne('policies', req.params.id, req.body); 
+  if(!u) return res.status(404).json({error:'Not found'}); 
+  res.json(u); 
+});
+app.delete('/api/policies/:id', (req,res)=>{ 
+  if(!deleteOne('policies', req.params.id)) return res.status(404).json({error:'Not found'}); 
+  res.json({ok:true}); 
+});
 
-// ---------- Gallery (image uploads) ----------
+// ---------- Gallery ----------
 app.get('/api/gallery', (req,res)=> res.json(readJSON('gallery')));
 app.post('/api/gallery', upload.single('file'), (req,res)=>{
   let obj = { id: Date.now() };
@@ -274,38 +313,48 @@ app.post('/api/gallery', upload.single('file'), (req,res)=>{
   insertOne('gallery', obj);
   res.json(obj);
 });
-app.put('/api/gallery/:id', (req,res)=>{ const u = updateOne('gallery', req.params.id, req.body); if(!u) return res.status(404).json({error:'Not found'}); res.json(u); });
-app.delete('/api/gallery/:id', (req,res)=>{ if(!deleteOne('gallery', req.params.id)) return res.status(404).json({error:'Not found'}); res.json({ok:true}); });
+app.put('/api/gallery/:id', (req,res)=>{ 
+  const u = updateOne('gallery', req.params.id, req.body); 
+  if(!u) return res.status(404).json({error:'Not found'}); 
+  res.json(u); 
+});
+app.delete('/api/gallery/:id', (req,res)=>{ 
+  if(!deleteOne('gallery', req.params.id)) return res.status(404).json({error:'Not found'}); 
+  res.json({ok:true}); 
+});
 
-// ---------- Factories (note: frontend sends PUT /api/factories with array) ----------
+// ---------- Factories ----------
 app.get('/api/factories', (req,res)=>{
-  // return object or array; frontend accepts both formats: if file contains object, return object; if array, return array
   const data = readJSON('factories');
   res.json(data);
 });
 app.post('/api/factories', (req,res)=>{
-  // accept array or object
   const body = req.body;
   writeJSON('factories', body);
   res.json(body);
 });
 app.put('/api/factories', (req,res)=>{
-  // frontend uses PUT with payload = array of factories => convert to object keyed by name
   const body = req.body;
-  // if it's an array of objects with {name, fire, firstAid, manpower} convert
+
   if(Array.isArray(body)){
     const obj = {};
-    body.forEach(f => { if(f.name) obj[f.name] = { fire: f.fire||0, firstAid: f.firstAid||0, manpower: f.manpower||0 }; });
+    body.forEach(f => { 
+      if(f.name) obj[f.name] = { fire: f.fire||0, firstAid: f.firstAid||0, manpower: f.manpower||0 }; 
+    });
     writeJSON('factories', obj);
     return res.json(obj);
-  } else {
-    writeJSON('factories', body);
-    return res.json(body);
-  }
+  } 
+
+  writeJSON('factories', body);
+  return res.json(body);
 });
-app.delete('/api/factories/:id', (req,res)=>{ // not typical but implement no-op delete by key
+app.delete('/api/factories/:id', (req,res)=>{
   const data = readJSON('factories');
-  if(data[req.params.id]){ delete data[req.params.id]; writeJSON('factories', data); return res.json({ok:true}); }
+  if(data[req.params.id]){
+    delete data[req.params.id];
+    writeJSON('factories', data);
+    return res.json({ok:true});
+  }
   return res.status(404).json({error:'Not found'});
 });
 
@@ -317,27 +366,37 @@ app.post('/api/chat', (req,res)=>{
   insertOne('chat', msg);
   res.json(msg);
 });
-app.put('/api/chat/:id', (req,res)=>{ const u = updateOne('chat', req.params.id, req.body); if(!u) return res.status(404).json({error:'Not found'}); res.json(u); });
-app.delete('/api/chat/:id', (req,res)=>{ if(!deleteOne('chat', req.params.id)) return res.status(404).json({error:'Not found'}); res.json({ok:true}); });
+app.put('/api/chat/:id', (req,res)=>{ 
+  const u = updateOne('chat', req.params.id, req.body); 
+  if(!u) return res.status(404).json({error:'Not found'}); 
+  res.json(u); 
+});
+app.delete('/api/chat/:id', (req,res)=>{ 
+  if(!deleteOne('chat', req.params.id)) return res.status(404).json({error:'Not found'}); 
+  res.json({ok:true}); 
+});
 
-// ---------- Small stats & misc ----------
+// ---------- Small stats ----------
 app.get('/api/stats', (req,res)=> res.json(readJSON('stats')));
-app.put('/api/stats', (req,res)=>{ writeJSON('stats', req.body); res.json(req.body); });
+app.put('/api/stats', (req,res)=>{ 
+  writeJSON('stats', req.body); 
+  res.json(req.body); 
+});
 
-// ---------- Auth (simple) ----------
+// ---------- Auth ----------
 app.post('/api/auth/login', (req,res)=>{
   const { username, password } = req.body || {};
   const users = readJSON('users');
   const user = users.find(u => u.username === username && u.password === password);
+
   if(!user){
-    // fallback to default admin
     if(username==='admin' && password==='admin123'){
       const u = { username:'admin', role:'admin' };
       return res.json({ token: 'admintoken-'+Date.now(), user: u });
     }
     return res.status(401).json({ error: 'Invalid credentials' });
   }
-  // issue simple token (not signed JWT)
+
   const token = 'token-' + Date.now() + '-' + Math.round(Math.random()*1e6);
   res.json({ token, user: { username: user.username, role: user.role } });
 });
@@ -347,7 +406,12 @@ app.get('/api', (req,res)=> {
   res.json({ ok:true, message:'HSE API running', modules: ['notices','factories','reports','ppe','training','policies','gallery','visitors','ptw','chat'] });
 });
 
-// start server
+// ---------- NEW ROOT ROUTE (FIX FOR RENDER HOME PAGE) ----------
+app.get("/", (req, res) => {
+  res.send("HSE Backend is running successfully!");
+});
+
+// ---------- Start Server ----------
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`HSE backend listening at http://0.0.0.0:${PORT}`);
   console.log(`uploads served at /uploads (folder ${UPLOADS_DIR})`);
